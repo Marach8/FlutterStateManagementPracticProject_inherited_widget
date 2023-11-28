@@ -105,23 +105,31 @@ class _AddContactViewState extends State<AddContactView> {
   
   @override
   Widget build(BuildContext context) {
+    final contactBook = ContactBook();
     return Scaffold(
       backgroundColor: Colors.white70,
       appBar: AppBar(title: const Text('Add a new Contact'), backgroundColor: Colors.blue),
-      body: Column(
-        children: [
-          TextField(
-            controller: _controller,
-            decoration: const InputDecoration(
-              hintText: 'Enter the name of a new contact'
-            )
-          ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: (){contactBook.addContact(contact: Contact(name: _controller.text)); Navigator.pop(context);},
-            child: const Text('Add Contact')
-          )
-        ]
+      body: ValueListenableBuilder(
+        valueListenable: contactBook,
+        builder: (context, contactValue, child){
+          return Column(
+            children: [
+              Text('You have ${contactValue.length} contacts'),
+              const SizedBox(height:10),
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  hintText: 'Enter the name of a new contact'
+                )
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: (){contactBook.addContact(contact: Contact(name: _controller.text)); Navigator.pop(context);},
+                child: const Text('Add Contact')
+              )
+            ]
+          );
+        }
       )
     );
   }
