@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 void main(){
   runApp(const MyApp());
@@ -25,23 +26,22 @@ class MyApp extends StatelessWidget {
 
 
 class Contact{
-  final String name;
-  Contact({required this.name});
+  final String name; final String id;
+  Contact({required this.name}): id = const Uuid().v4();
 }
 
 
-class ContactBook{
-  ContactBook._sharedInstance();
+class ContactBook extends ValueNotifier<List<Contact>>{
+  ContactBook._sharedInstance(): super([]);
   static final ContactBook _shared = ContactBook._sharedInstance();
   factory ContactBook() => _shared;
 
-  final List<Contact> _contacts = [Contact(name: 'Ajah Emmanuel Nnanna')];
-  int get numberOfContacts => _contacts.length;
+  void addContact({required Contact contact}){value.add(contact); notifyListeners();}
+  void removeContact({required Contact contact}){
+    if (value.contains(contact)){value.remove(contact); notifyListeners();}
+  }
 
-  void addContact({required Contact contact}) => _contacts.add(contact);
-  void removeContact({required Contact contact}) => _contacts.remove(contact);
-
-  Contact? getContact({required int index}) => numberOfContacts > index ? _contacts[index] : null;
+  Contact? getContact({required int index}) => value.length > index ? value[index] : null;
 }
 
 
@@ -54,12 +54,24 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white70,
       appBar: AppBar(title: const Text('Contacts List Homepage'), backgroundColor: Colors.blue),
-      body: ListView.builder(
-        itemCount: contactBook.numberOfContacts,
-        itemBuilder: (context, index) {
-          final contact = contactBook.getContact(index: index)!;
-          return ListTile(
-            title: Text(contact.name,)
+      body: ValueListenableBuilder(
+        valueListenable: contactBook,
+        builder: (context, valueContacts, child){
+          return ListView.builder(
+            itemCount: valueContacts.length,
+            itemBuilder: (context, index) {
+              final contact = valueContacts[index];
+              return Dismissible(
+                key: ValueKey(contact.id),
+                onDismissed: (direction){contactBook.removeContact(contact: contact);},
+                child: Material(
+                  color: Colors.white, elevation: 6,
+                  child: ListTile(
+                    title: Text(contact.name,)
+                  ),
+                ),
+              );
+            }
           );
         }
       ),
